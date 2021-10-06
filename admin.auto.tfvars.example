@@ -1,0 +1,10 @@
+resourceOwner        = "bigip-team"
+awsRegion            = "us-east-2"
+# For projectPrefix, shorter is better. Aim for 8 or less.
+projectPrefix        = "f5-tgw-ha"
+# set the license type to BYOL or PAYG
+bigipLicenseType     = "PAYG"
+# set a valid license key if BYOL; otherwise this value is ignored
+bigipLicenseAZ1      = "PAYG"
+bigipLicenseAZ2      = "PAYG"
+bigipAdminPassword   = "f5labpassword!"

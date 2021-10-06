@@ -1,0 +1,72 @@
+{
+     "class": "AS3",
+     "action": "deploy",
+     "persist": true,
+     "declaration": {
+         "class": "ADC",
+         "schemaVersion": "3.0.0",
+         "id": "${as3_app_id}",
+         "label": "${as3_app_label}",
+         "remark": "${as3_app_remark}",
+         "Sample_02": {
+             "class": "Tenant",
+             "defaultRouteDomain": 0,
+             "Application_2": {
+                 "class": "Application",
+                 "template": "http",
+             "serviceMain": {
+                 "class": "Service_HTTP",
+                 "virtualAddresses": [
+                     "10.2.2.10"
+                 ],
+                 "pool": "web_pool2"
+                 },
+                 "web_pool2": {
+                     "class": "Pool",
+                     "monitors": [
+                         "http"
+                     ],
+                     "members": [
+                         {
+                             "servicePort": 80,
+                             "serverAddresses": [
+                                 "192.2.1.100",
+                                 "192.2.1.110"
+                             ]
+                         }
+                     ]
+                 }
+             }
+         },
+         "Sample_03": {
+             "class": "Tenant",
+             "defaultRouteDomain": 0,
+             "Application_3": {
+                 "class": "Application",
+                 "template": "http",
+             "serviceMain": {
+                 "class": "Service_HTTP",
+                 "virtualAddresses": [
+                     "10.1.2.10"
+                 ],
+                 "pool": "web_pool3"
+                 },
+                 "web_pool3": {
+                     "class": "Pool",
+                     "monitors": [
+                         "http"
+                     ],
+                     "members": [
+                         {
+                             "servicePort": 80,
+                             "serverAddresses": [
+                                 "192.3.1.100",
+                                 "192.3.1.110"
+                             ]
+                         }
+                     ]
+                 }
+             }
+         }
+     }
+ }
