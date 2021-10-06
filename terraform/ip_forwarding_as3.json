@@ -15,11 +15,14 @@
         "health_monitoring_http": {
           "class": "Service_HTTP",
           "virtualAddresses": [
-            "${}"
-          ]
+            "${destination_address}"
+          ],
+          "profileHTTP": "basic",
+          "virtualType": "standard",
+          "virtualPort": 443
         }
       }
-    }
+    },
     "IP-Forwarding": {
       "class": "Tenant",
       "default_forwarding_ipv4": {

@@ -13,14 +13,14 @@ provider "aws" {
 
 provider "bigip" {
   alias = "primary"
-  address = "${aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.private_ip}"
+  address = "${aws_eip.F5_BIGIP_AZ1EIP_MGMT.public_ip}"
   username = "admin"
   password = "${var.bigipAdminPassword}"
 }
 
 provider "bigip" {
   alias = "secondary"
-  address = "${aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.private_ip}"
+  address = "${aws_eip.F5_BIGIP_AZ2EIP_MGMT.public_ip}"
   username = "admin"
   password = "${var.bigipAdminPassword}"
 }
@@ -1091,7 +1091,7 @@ resource "aws_ec2_transit_gateway_route_table_association" "securityTGWRTAssocia
 data "template_file" "bigip_as3_AZ1" {
   template = "${file("${path.module}/ip_forwarding_as3.json")}"
   vars = {
-    destination_address = "${aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.private_ip}"
+    destination_address = "${aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.private_ip}"
     f5_as3_version = "${var.f5_as3_version}"
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
   }
@@ -1100,7 +1100,7 @@ data "template_file" "bigip_as3_AZ1" {
 data "template_file" "bigip_as3_AZ2" {
   template = "${file("${path.module}/ip_forwarding_as3.json")}"
   vars = {
-    destination_address = "${aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.private_ip}"
+    destination_address = "${aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.private_ip}"
     f5_as3_version = "${var.f5_as3_version}"
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
   }

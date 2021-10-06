@@ -6,7 +6,7 @@ terraform {
     aws = ">= 3.61"
     http = ">= 2.1.0"
     bigip = {
-      source = "terraform-providers/bigip"
+      source = "F5Networks/bigip"
     }
   }
 }
