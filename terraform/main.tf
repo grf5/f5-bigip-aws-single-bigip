@@ -707,8 +707,3 @@ resource "aws_api_gateway_vpc_link" "f5toJuiceShopVPCLink" {
   description = "stitches together the F5 and Juice Shop VPCs"
   target_arns = [aws_lb.juiceShopAPINLB.arn]
 }
-
-resource "http_as3_application" "sap_app" {
-  as3_app_label = "${var.app_label}"
-  as3_declaration = "${file("http_as3_template.json").rendered}"
-}
