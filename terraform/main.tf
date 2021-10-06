@@ -141,13 +141,13 @@ resource "aws_default_security_group" "f5BigIPSG" {
     protocol = "tcp"
     from_port = 80
     to_port = 80
-    cidr_blocks = [var.juiceShopAPICIDR,var.f5BigIPCIDR]
+    cidr_blocks = [var.juiceShopCIDR,var.f5BigIPCIDR]
   }
   ingress {
     protocol = "tcp"
     from_port = 443
     to_port = 443
-    cidr_blocks = [var.juiceShopAPICIDR,var.f5BigIPCIDR]
+    cidr_blocks = [var.juiceShopCIDR,var.f5BigIPCIDR]
   }
   egress {
     from_port = 0
@@ -229,8 +229,8 @@ data "template_file" "bigip_runtime_init_AZ1" {
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
     service_address = "${aws_eip.F5_BIGIP_AZ1EIP_DATA.public_ip}"
-    pool_member_1 = "${aws_network_interface.juiceShopAPIAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.juiceShopAPIAZ2ENI.private_ip}"    
+    pool_member_1 = "${aws_network_interface.juiceShopAZ1ENI.private_ip}"
+    pool_member_2 = "${aws_network_interface.juiceShopAZ2ENI.private_ip}"    
   }
 }
 
@@ -247,8 +247,8 @@ data "template_file" "bigip_runtime_init_AZ2" {
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
     service_address = "${aws_eip.F5_BIGIP_AZ2EIP_DATA.public_ip}"    
-    pool_member_1 = "${aws_network_interface.juiceShopAPIAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.juiceShopAPIAZ2ENI.private_ip}"    
+    pool_member_1 = "${aws_network_interface.juiceShopAZ1ENI.private_ip}"
+    pool_member_2 = "${aws_network_interface.juiceShopAZ2ENI.private_ip}"    
   }
 }
 
@@ -394,17 +394,17 @@ resource "aws_instance" "F5_BIGIP_AZ2" {
 ## VPC
 ##
 
-resource "aws_vpc" "juiceShopAPIVPC" {
-  cidr_block = var.juiceShopAPICIDR
+resource "aws_vpc" "juiceShopVPC" {
+  cidr_block = var.juiceShopCIDR
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPIVPC-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopVPC-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_default_security_group" "juiceShopAPISG" {
-  vpc_id = aws_vpc.juiceShopAPIVPC.id
+resource "aws_default_security_group" "juiceShopSG" {
+  vpc_id = aws_vpc.juiceShopVPC.id
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPISG-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopSG-${random_id.buildSuffix.hex}"
   }
   ingress {
     protocol = -1
@@ -449,40 +449,40 @@ ingress {
   }
 }
 
-resource "aws_subnet" "juiceShopAPISubnetAZ1" {
-  vpc_id = aws_vpc.juiceShopAPIVPC.id
-  cidr_block = var.juiceShopAPISubnetAZ1
+resource "aws_subnet" "juiceShopSubnetAZ1" {
+  vpc_id = aws_vpc.juiceShopVPC.id
+  cidr_block = var.juiceShopSubnetAZ1
   availability_zone = local.awsAz1
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPISubnetAZ1-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopSubnetAZ1-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_subnet" "juiceShopAPISubnetAZ2" {
-  vpc_id = aws_vpc.juiceShopAPIVPC.id
-  cidr_block = var.juiceShopAPISubnetAZ2
+resource "aws_subnet" "juiceShopSubnetAZ2" {
+  vpc_id = aws_vpc.juiceShopVPC.id
+  cidr_block = var.juiceShopSubnetAZ2
   availability_zone = local.awsAz2
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPISubnetAZ2-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopSubnetAZ2-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_internet_gateway" "juiceShopAPIIGW" {
-  vpc_id = aws_vpc.juiceShopAPIVPC.id
+resource "aws_internet_gateway" "juiceShopIGW" {
+  vpc_id = aws_vpc.juiceShopVPC.id
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPIIGW-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopIGW-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_default_route_table" "juiceShopAPIMainRT" {
-  default_route_table_id = aws_vpc.juiceShopAPIVPC.default_route_table_id
+resource "aws_default_route_table" "juiceShopMainRT" {
+  default_route_table_id = aws_vpc.juiceShopVPC.default_route_table_id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.juiceShopAPIIGW.id
+    gateway_id = aws_internet_gateway.juiceShopIGW.id
   }
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPIMainRT-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopMainRT-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -490,27 +490,27 @@ resource "aws_default_route_table" "juiceShopAPIMainRT" {
 ## Juice Shop API AZ1
 ##
 
-resource "aws_network_interface" "juiceShopAPIAZ1ENI" {
-  subnet_id = aws_subnet.juiceShopAPISubnetAZ1.id
+resource "aws_network_interface" "juiceShopAZ1ENI" {
+  subnet_id = aws_subnet.juiceShopSubnetAZ1.id
   tags = {
-    Name = "juiceShopAPIAZ1ENI"
+    Name = "juiceShopAZ1ENI"
   }
 }
 
-resource "aws_eip" "juiceShopAPIAZ1EIP" {
+resource "aws_eip" "juiceShopAZ1EIP" {
   vpc = true
-  network_interface = aws_network_interface.juiceShopAPIAZ1ENI.id
-  associate_with_private_ip = aws_network_interface.juiceShopAPIAZ1ENI.private_ip
+  network_interface = aws_network_interface.juiceShopAZ1ENI.id
+  associate_with_private_ip = aws_network_interface.juiceShopAZ1ENI.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
-    aws_internet_gateway.juiceShopAPIIGW
+    aws_internet_gateway.juiceShopIGW
   ]
   tags = {
-    Name = "juiceShopAPIAZ1EIP"
+    Name = "juiceShopAZ1EIP"
   }
 }
 
-resource "aws_instance" "juiceShopAPIAZ1" {
+resource "aws_instance" "juiceShopAZ1" {
   ami = data.aws_ami.ubuntu.id
   instance_type = "${var.juiceShopEC2InstanceType}"
   availability_zone = local.awsAz1
@@ -531,15 +531,15 @@ resource "aws_instance" "juiceShopAPIAZ1" {
               sudo reboot
               EOF    
   network_interface {
-    network_interface_id = aws_network_interface.juiceShopAPIAZ1ENI.id
+    network_interface_id = aws_network_interface.juiceShopAZ1ENI.id
     device_index = 0
   }
   # Let's ensure an EIP is provisioned so user-data can run successfully
   depends_on = [
-    aws_eip.juiceShopAPIAZ1EIP
+    aws_eip.juiceShopAZ1EIP
   ]
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPIAZ1-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopAZ1-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -547,27 +547,27 @@ resource "aws_instance" "juiceShopAPIAZ1" {
 ## Juice Shop API AZ2
 ##
 
-resource "aws_network_interface" "juiceShopAPIAZ2ENI" {
-  subnet_id = aws_subnet.juiceShopAPISubnetAZ2.id
+resource "aws_network_interface" "juiceShopAZ2ENI" {
+  subnet_id = aws_subnet.juiceShopSubnetAZ2.id
   tags = {
-    Name = "juiceShopAPIAZ2ENI"
+    Name = "juiceShopAZ2ENI"
   }
 }
 
-resource "aws_eip" "juiceShopAPIAZ2EIP" {
+resource "aws_eip" "juiceShopAZ2EIP" {
   vpc = true
-  network_interface = aws_network_interface.juiceShopAPIAZ2ENI.id
-  associate_with_private_ip = aws_network_interface.juiceShopAPIAZ2ENI.private_ip
+  network_interface = aws_network_interface.juiceShopAZ2ENI.id
+  associate_with_private_ip = aws_network_interface.juiceShopAZ2ENI.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
-    aws_internet_gateway.juiceShopAPIIGW
+    aws_internet_gateway.juiceShopIGW
   ]
   tags = {
-    Name = "juiceShopAPIAZ2EIP"
+    Name = "juiceShopAZ2EIP"
   }
 }
 
-resource "aws_instance" "juiceShopAPIAZ2" {
+resource "aws_instance" "juiceShopAZ2" {
   ami = data.aws_ami.ubuntu.id
   instance_type = "${var.juiceShopEC2InstanceType}"
   availability_zone = local.awsAz2
@@ -588,14 +588,28 @@ resource "aws_instance" "juiceShopAPIAZ2" {
               sudo reboot
               EOF    
   network_interface {
-    network_interface_id = aws_network_interface.juiceShopAPIAZ2ENI.id
+    network_interface_id = aws_network_interface.juiceShopAZ2ENI.id
     device_index = 0
   }
   # Let's ensure an EIP is provisioned so user-data can run successfully
   depends_on = [
-    aws_eip.juiceShopAPIAZ2EIP
+    aws_eip.juiceShopAZ2EIP
   ]
   tags = {
-    Name = "${var.projectPrefix}-juiceShopAPIAZ2-${random_id.buildSuffix.hex}"
+    Name = "${var.projectPrefix}-juiceShopAZ2-${random_id.buildSuffix.hex}"
+  }
+}
+
+##
+## Transit Gateway
+##
+
+resource "aws_ec2_transit_gateway" "awsTransitGateway" {
+  description = "Transit Gateway"
+  auto_accept_shared_attachments = enable
+  default_route_table_association = enable
+  default_route_table_propagation = enable
+  tags = {
+    Name = "${var.projectPrefix}-tgw-${random_id.buildSuffix.hex}"
   }
 }

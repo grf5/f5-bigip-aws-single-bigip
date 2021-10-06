@@ -38,12 +38,12 @@ variable "bigipLicenseAZ2" {
   description = "BIG-IP License for AZ2 instance"
   type = string
 }
-variable "juiceShopAPICIDR" {
+variable "juiceShopCIDR" {
   description = "CIDR block for entire Juice Shop API VPC"
   default = "10.20.0.0/16"
   type = string
 }
-variable "juiceShopAPISubnetAZ1" {
+variable "juiceShopSubnetAZ1" {
   description = "Subnet for Juice Shop API AZ1"
   default = "10.20.100.0/24"
   type = string
@@ -52,7 +52,7 @@ variable "juiceShopEC2InstanceType" {
   description = "EC2 instance type for Juice Shop servers"
   default = "m5.xlarge"
 }
-variable "juiceShopAPISubnetAZ2" {
+variable "juiceShopSubnetAZ2" {
   description = "Subnet for Juice Shop API AZ2"
   default = "10.20.200.0/24"
   type = string
