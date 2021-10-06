@@ -28,5 +28,5 @@ output "BIG-IP_AZ2_Mgmt_URL" {
 }
 output "SSH_Bash_aliases" {
   description = "cut/paste block to create ssh aliases"
-  value = "\nCut and paste this block to enable SSH aliases (shortcuts):\n\nalias juiceshop1='ssh ubuntu@${aws_eip.juiceShopAPIAZ1EIP.public_ip} -p 22 -i /${local_file.newkey_pem.filename}'\nalias juiceshop2='ssh ubuntu@${aws_eip.juiceShopAPIAZ2EIP.public_ip} -p 22 -i ${local_file.newkey_pem.filename}'\nalias bigip1='ssh admin@${aws_eip.F5_BIGIP_AZ1EIP_MGMT.public_ip} -p 22 -i ${local_file.newkey_pem.filename}'\nalias bigip2='ssh admin@${aws_eip.F5_BIGIP_AZ2EIP_MGMT.public_ip} -p 22 -i ${local_file.newkey_pem.filename}'\n"
+  value = "\nCut and paste this block to enable SSH aliases (shortcuts):\n\nalias juiceshop1='ssh ubuntu@${aws_eip.juiceShopAPIAZ1EIP.public_ip} -p 22 -i \"${local_file.newkey_pem.filename}\"'\nalias juiceshop2='ssh ubuntu@${aws_eip.juiceShopAPIAZ2EIP.public_ip} -p 22 -i \"${local_file.newkey_pem.filename}\"'\nalias bigip1='ssh admin@${aws_eip.F5_BIGIP_AZ1EIP_MGMT.public_ip} -p 22 -i \"${local_file.newkey_pem.filename}\"'\nalias bigip2='ssh admin@${aws_eip.F5_BIGIP_AZ2EIP_MGMT.public_ip} -p 22 -i \"${local_file.newkey_pem.filename}\"'\n"
 }

@@ -91,9 +91,9 @@ data "aws_ami" "f5BigIP_AMI" {
   owners = ["679593333241"]
 }
 
-#######################################
-## F5 BIG-IP Advanced WAF HA Cluster ##
-#######################################
+##########################
+## F5 BIG-IP HA Cluster ##
+##########################
 
 ##
 ## VPC
@@ -598,112 +598,4 @@ resource "aws_instance" "juiceShopAPIAZ2" {
   tags = {
     Name = "${var.projectPrefix}-juiceShopAPIAZ2-${random_id.buildSuffix.hex}"
   }
-}
-
-##
-## Network Load Balancing for API
-##
-
-resource "aws_lb" "juiceShopAPINLB" {
-  name = "${var.projectPrefix}-juiceShopAPINLB-${random_id.buildSuffix.hex}"
-  load_balancer_type = "network"
-  internal = false
-  subnet_mapping {
-    subnet_id = aws_subnet.juiceShopAPISubnetAZ1.id
-  }
-  subnet_mapping {
-    subnet_id = aws_subnet.juiceShopAPISubnetAZ2.id
-  }
-  enable_cross_zone_load_balancing = true
-  tags = {
-    Name = "${var.projectPrefix}-juiceShopAPINLB-${random_id.buildSuffix.hex}"
-  }
-}
-
-resource "aws_lb_target_group" "juiceShopAPITG" {
-  name = "${var.projectPrefix}-juiceShopAPITG-${random_id.buildSuffix.hex}"
-  port = 80
-  protocol = "TCP"
-  vpc_id = aws_vpc.juiceShopAPIVPC.id
-  health_check {
-    enabled = true
-    interval = 10
-  }
-  tags = {
-    Name = "${var.projectPrefix}-juiceShopAPITG-${random_id.buildSuffix.hex}"
-  }  
-}
-
-resource "aws_lb_listener" "juiceShopAPINLBListener" {
-  load_balancer_arn = aws_lb.juiceShopAPINLB.arn
-  port = "80"
-  protocol = "TCP"
-  default_action {
-    target_group_arn = aws_lb_target_group.juiceShopAPITG.arn
-    type = "forward"
-  }
-}
-
-resource "aws_lb_target_group_attachment" "juiceShopAPIAZ1TGAttachment" {
-  target_group_arn = aws_lb_target_group.juiceShopAPITG.arn
-  target_id = aws_instance.juiceShopAPIAZ1.id
-}
-
-resource "aws_lb_target_group_attachment" "juiceShopAPIAZ2TGAttachment" {
-  target_group_arn = aws_lb_target_group.juiceShopAPITG.arn
-  target_id = aws_instance.juiceShopAPIAZ2.id
-}
-
-##
-## AWS API Gateway
-##
-
-resource "aws_api_gateway_rest_api" "f5-awaf-aws-api-gateway" {
-  name = "${var.projectPrefix}-apigw-${random_id.buildSuffix.hex}"
-}
-
-resource "aws_api_gateway_resource" "f5-awaf-aws-api-gateway-resource" {
-  parent_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.root_resource_id
-  path_part = "gateway-resource"
-  rest_api_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.id
-}
-
-resource "aws_api_gateway_method" "f5-awaf-aws-api-gateway-method" {
-  authorization = "NONE"
-  http_method = "ANY"
-  resource_id = aws_api_gateway_resource.f5-awaf-aws-api-gateway-resource.id
-  rest_api_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.id
-}
-
-resource "aws_api_gateway_integration" "f5-awaf-aws-api-gateway-integration" {
-  http_method = aws_api_gateway_method.f5-awaf-aws-api-gateway-method.http_method
-  resource_id = aws_api_gateway_resource.f5-awaf-aws-api-gateway-resource.id
-  rest_api_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.id
-  type = "MOCK"
-}
-
-resource "aws_api_gateway_deployment" "f5-awaf-aws-api-gateway-deployment" {
-  rest_api_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.id
-  triggers = {
-    "redeployment " = sha1(jsonencode([
-      aws_api_gateway_resource.f5-awaf-aws-api-gateway-resource.id,
-      aws_api_gateway_method.f5-awaf-aws-api-gateway-method.id,
-      aws_api_gateway_integration.f5-awaf-aws-api-gateway-integration.id,
-    ]))
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_api_gateway_stage" "f5-awaf-aws-api-gateway-deployment" {
-  deployment_id = aws_api_gateway_deployment.f5-awaf-aws-api-gateway-deployment.id
-  rest_api_id = aws_api_gateway_rest_api.f5-awaf-aws-api-gateway.id
-  stage_name = "apigw"
-}
-
-resource "aws_api_gateway_vpc_link" "f5toJuiceShopVPCLink" {
-  name = "${var.projectPrefix}-vpclink-${random_id.buildSuffix.hex}"
-  description = "stitches together the F5 and Juice Shop VPCs"
-  target_arns = [aws_lb.juiceShopAPINLB.arn]
 }
