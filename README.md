@@ -6,7 +6,9 @@ Terraform plan to deploy a POC of BIG-IP HA with transit gateway and Lambda-upda
 
 ## Getting Started
 
-Provide a quick example of how to use your code.  This should provide the user with a launch point to quickly see what the project can offer them.
+1. Copy the admin.tfvars file and update the variables.
+2. Review and edit the variables.tf file, where/if necessary.
+3. Run the setup.sh script.
 
 ## Installation
 
