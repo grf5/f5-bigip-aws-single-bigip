@@ -38,23 +38,43 @@ variable "bigipLicenseAZ2" {
   description = "BIG-IP License for AZ2 instance"
   type = string
 }
-variable "juiceShopCIDR" {
+variable "ClientSubnetCIDR" {
   description = "CIDR block for entire Juice Shop API VPC"
   default = "10.20.0.0/16"
   type = string
 }
-variable "juiceShopSubnetAZ1" {
+variable "ClientSubnetAZ1" {
   description = "Subnet for Juice Shop API AZ1"
   default = "10.20.100.0/24"
   type = string
 }
-variable "juiceShopEC2InstanceType" {
+variable "ClientEC2InstanceType" {
   description = "EC2 instance type for Juice Shop servers"
   default = "m5.xlarge"
 }
-variable "juiceShopSubnetAZ2" {
+variable "ClientSubnetAZ2" {
   description = "Subnet for Juice Shop API AZ2"
   default = "10.20.200.0/24"
+  type = string
+}
+
+variable "ServerSubnetCIDR" {
+  description = "CIDR block for entire Juice Shop API VPC"
+  default = "10.30.0.0/16"
+  type = string
+}
+variable "ServerSubnetAZ1" {
+  description = "Subnet for Juice Shop API AZ1"
+  default = "10.30.100.0/24"
+  type = string
+}
+variable "ServerEC2InstanceType" {
+  description = "EC2 instance type for Juice Shop servers"
+  default = "m5.xlarge"
+}
+variable "ServerSubnetAZ2" {
+  description = "Subnet for Juice Shop API AZ2"
+  default = "10.30.200.0/24"
   type = string
 }
 variable "f5BigIPCIDR" {
@@ -85,6 +105,11 @@ variable "f5BigIPSubnetAZ2-DATA" {
 variable get_address_url {
   type = string
   default = "https://api.ipify.org"
+  description = "URL for getting external IP address"
+}
+variable get_address_url_ipv6 {
+  type = string
+  default = "https://api6.ipify.org"
   description = "URL for getting external IP address"
 }
 variable get_address_request_headers {

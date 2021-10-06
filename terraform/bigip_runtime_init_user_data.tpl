@@ -103,7 +103,7 @@ extension_services:
             ui.system.preferences.advancedselection: advanced
             ui.advisory.enabled: true
             ui.advisory.color: green
-            ui.advisory.text: "Advanced WAF for AWS API Gateway"
+            ui.advisory.text: "AWS Transit Gateway Routing Update via Lambda"
           ntpConfiguration:
             class: NTP
             servers:
@@ -136,35 +136,6 @@ extension_services:
             gw: "{{{ DATAPLANE_GATEWAY }}}"
             network: default
             mtu: 1500
-    - extensionType: as3
-      type: inline
-      value: 
-        class: AS3
-        action: deploy
-        persist: true
-        declaration:
-          class: ADC
-          schemaVersion: ${f5_as3_schema_version}
-          label: "Adv WAF with AWS API Gateway AppSvcs"
-          remark: "Tested with 16.1"
-          AdvWAF-AWS-APIGw:
-            class: Tenant
-            AdvWAF-APIGw-HTTPS:
-              class: Application
-              service:
-                class: Service_HTTP
-                virtualAddresses: 
-                  - "${service_address}"
-                pool: api_pool
-              api_pool:
-                class: Pool
-                monitors: 
-                  - http
-                members:
-                  - servicePort: 80
-                    serverAddresses: 
-                      - "${pool_member_1}"
-                      - "${pool_member_2}"
 EOF
 
 # Add licensing if necessary
