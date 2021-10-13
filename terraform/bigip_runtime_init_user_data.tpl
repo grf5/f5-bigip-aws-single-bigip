@@ -138,13 +138,13 @@ extension_services:
           cmFailoverAddress:
             class: FailoverUnicast
             address: /Common/data-self/address
-          cmTrust:
-            class: DeviceTrust
-            localUsername: admin
-            localPassword: ${bigipAdminPassword}
-            remoteHost: ${cm_peer_ip}
-            remoteUsername: admin
-            remotePassword: ${bigipAdminPassword}
+          # cmTrust:
+          #   class: DeviceTrust
+          #   localUsername: admin
+          #   localPassword: ${bigipAdminPassword}
+          #   remoteHost: ${cm_peer_ip}
+          #   remoteUsername: admin
+          #   remotePassword: ${bigipAdminPassword}
           # cmFailoverGroup:
           #   class: DeviceGroup
           #   type: sync-failover

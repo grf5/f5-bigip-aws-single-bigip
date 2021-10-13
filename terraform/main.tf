@@ -216,6 +216,31 @@ resource "aws_internet_gateway" "SecuritySvcsIGW" {
   }
 }
 
+resource "aws_route_table" "SecuritySvcsMgmtRT" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    }
+  route {
+      ipv6_cidr_block = "::/0"
+      gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    }
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsMgmtRT-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_route_table_association" "SecuritySvcsMgmtRTAssociationAZ1" {
+  subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
+  route_table_id = aws_route_table.SecuritySvcsMgmtRT.id
+}
+
+resource "aws_route_table_association" "SecuritySvcsMgmtRTAssociationAZ2" {
+  subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-MGMT.id
+  route_table_id = aws_route_table.SecuritySvcsMgmtRT.id
+}
+
 resource "aws_default_route_table" "SecuritySvcsMainRT" {
   default_route_table_id = aws_vpc.SecuritySvcsVPC.default_route_table_id
   route {
@@ -228,35 +253,35 @@ resource "aws_default_route_table" "SecuritySvcsMainRT" {
   }
   route {
     cidr_block = aws_subnet.ClientSubnetAZ1.cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ClientSubnetAZ1.ipv6_cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ClientSubnetAZ2.cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ClientSubnetAZ2.ipv6_cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ServerSubnetAZ1.cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ServerSubnetAZ1.ipv6_cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ServerSubnetAZ2.cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ServerSubnetAZ2.ipv6_cidr_block
-    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
   }
   tags = {
     Name = "${var.projectPrefix}-SecuritySvcsMainRT-${random_id.buildSuffix.hex}"
