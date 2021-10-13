@@ -152,16 +152,10 @@ resource "aws_default_security_group" "SecuritySvcsSG" {
     ipv6_cidr_blocks = [format("%s/%s",data.http.ipv6_address.body,128)]
   }
   ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [var.ClientSubnetCIDR,var.SecuritySvcsCIDR]
-  }
-  ingress {
-    protocol = "tcp"
-    from_port = 443
-    to_port = 443
-    cidr_blocks = [var.ClientSubnetCIDR,var.SecuritySvcsCIDR]
+    protocol = -1
+    from_port = 0
+    to_port = 0
+    cidr_blocks = [var.ServerSubnetCIDR,var.ClientSubnetCIDR,var.SecuritySvcsCIDR]
   }
   egress {
     from_port = 0
@@ -289,8 +283,7 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
-    cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"  
-    cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.private_ip}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
     cm_peer_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
@@ -313,8 +306,7 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
-    cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.private_ip}"  
-    cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
     cm_peer_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
@@ -337,8 +329,7 @@ data "template_file" "bigip_runtime_init_PRI_AZ2" {
     monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
-    cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"  
-    cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.private_ip}" 
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
     cm_peer_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
@@ -361,8 +352,7 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
     monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
-    cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.private_ip}"  
-    cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}" 
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
     cm_peer_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
@@ -374,6 +364,7 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
 ##
 
 resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_DATA" {
+  source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
   tags = {
     Name = "F5_BIGIP_PRI_AZ1ENI_DATA"
@@ -430,6 +421,7 @@ resource "aws_instance" "F5_BIGIP_PRI_AZ1" {
 ##
 
 resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_DATA" {
+  source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
   tags = {
     Name = "F5_BIGIP_SEC_AZ1ENI_DATA"
@@ -486,6 +478,7 @@ resource "aws_instance" "F5_BIGIP_SEC_AZ1" {
 ##
 
 resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_DATA" {
+  source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
   tags = {
     Name = "F5_BIGIP_PRI_AZ2ENI_DATA"
@@ -542,6 +535,7 @@ resource "aws_instance" "F5_BIGIP_PRI_AZ2" {
 ##
 
 resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_DATA" {
+  source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
   tags = {
     Name = "F5_BIGIP_SEC_AZ2ENI_DATA"
@@ -620,19 +614,11 @@ resource "aws_default_security_group" "ClientSG" {
     from_port = 0
     to_port = 0
   }
-
   ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [aws_subnet.SecuritySvcsSubnetAZ1-DATA.cidr_block]
-  }
-
-ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [aws_subnet.SecuritySvcsSubnetAZ2-DATA.cidr_block]
+    protocol = -1
+    from_port = 0
+    to_port = 0
+    cidr_blocks = [aws_subnet.ServerSubnetAZ1.cidr_block,aws_subnet.ServerSubnetAZ2.cidr_block]
   }
   ingress {
     protocol = "tcp"
@@ -644,18 +630,6 @@ ingress {
     protocol = "tcp"
     from_port = 22
     to_port = 22
-    ipv6_cidr_blocks = [format("%s/%s",data.http.ipv6_address.body,128)]
-  }
-  ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [format("%s/%s",data.http.ip_address.body,32)]
-  }
-  ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
     ipv6_cidr_blocks = [format("%s/%s",data.http.ipv6_address.body,128)]
   }
   egress {
@@ -868,16 +842,10 @@ resource "aws_default_security_group" "ServerSG" {
     to_port = 0
   }
   ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [aws_subnet.SecuritySvcsSubnetAZ1-DATA.cidr_block]
-  }
-  ingress {
-    protocol = "tcp"
-    from_port = 80
-    to_port = 80
-    cidr_blocks = [aws_subnet.SecuritySvcsSubnetAZ2-DATA.cidr_block]
+    protocol = -1
+    from_port = 0
+    to_port = 0
+    cidr_blocks = [aws_subnet.ClientSubnetAZ1.cidr_block,aws_subnet.ClientSubnetAZ2.cidr_block]
   }
   ingress {
     protocol = "tcp"

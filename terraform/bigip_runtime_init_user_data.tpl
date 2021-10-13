@@ -142,28 +142,21 @@ extension_services:
             class: DeviceTrust
             localUsername: admin
             localPassword: ${bigipAdminPassword}
-            remoteHost: ${cm_peer_mgmt_ip}
+            remoteHost: ${cm_peer_ip}
             remoteUsername: admin
             remotePassword: ${bigipAdminPassword}
-          trafficGroup:
-            class: TrafficGroup
-            autoFailbackEnabled: false
-            failoverMethod: ha-order
-            haOrder: 
-              - ${cm_self_hostname}
-              - ${cm_peer_hostname}
-          failoverGroup:
-            class: DeviceGroup
-            type: sync-failover
-            members:
-              - ${cm_self_hostname}
-              - ${cm_peer_hostname}
-            owner: ${cm_failover_group_owner}
-            autoSync: true
-            saveOnAutoSync: true
-            networkFailover: true
-            fullLoadOnSync: false
-            asmSync: false
+          # cmFailoverGroup:
+          #   class: DeviceGroup
+          #   type: sync-failover
+          #   members:
+          #     - ${cm_self_hostname}
+          #     - ${cm_peer_hostname}
+          #   owner: /Common/cmFailoverGroup/members/0
+          #   autoSync: true
+          #   saveOnAutoSync: true
+          #   networkFailover: true
+          #   fullLoadOnSync: false
+          #   asmSync: false
     - extensionType: as3
       type: inline
       value:
