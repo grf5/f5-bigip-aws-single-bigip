@@ -2,15 +2,15 @@
 
 # Send output to log file and serial console
 mkdir -p  /var/log/cloud /config/cloud /var/config/rest/downloads
-LOG_FILE=/var/log/cloud/startup-script.log
-[[ ! -f $LOG_FILE ]] && touch $LOG_FILE || { echo "Run Only Once. Exiting"; exit; }
-npipe=/tmp/$$.tmp
-trap "rm -f $npipe" EXIT
-mknod $npipe p
-tee <$npipe -a $LOG_FILE /dev/ttyS0 &
-exec 1>&-
-exec 1>$npipe
-exec 2>&1
+# LOG_FILE=/var/log/cloud/startup-script.log
+# [[ ! -f $LOG_FILE ]] && touch $LOG_FILE || { echo "Run Only Once. Exiting"; exit; }
+# npipe=/tmp/$$.tmp
+# trap "rm -f $npipe" EXIT
+# mknod $npipe p
+# tee <$npipe -a $LOG_FILE /dev/ttyS0 &
+# exec 1>&-
+# exec 1>$npipe
+# exec 2>&1
 
 ### write_files:
 # shell script execution with debug enabled
@@ -125,7 +125,7 @@ extension_services:
             class: SelfIp
             address: "{{{ DATAPLANE_IP }}}"
             vlan: data-vlan
-            allowService: none
+            allowService: default
             trafficGroup: traffic-group-local-only
           data-default-route:
             class: Route
@@ -150,14 +150,14 @@ extension_services:
             autoFailbackEnabled: false
             failoverMethod: ha-order
             haOrder: 
-            - ${cm_self_hostname}
-            - ${cm_peer_hostname}
+              - ${cm_self_hostname}
+              - ${cm_peer_hostname}
           failoverGroup:
             class: DeviceGroup
             type: sync-failover
             members:
-            - ${cm_self_mgmt_ip}
-            - ${cm_peer_mgmt_ip}
+              - ${cm_self_hostname}
+              - ${cm_peer_hostname}
             owner: ${cm_failover_group_owner}
             autoSync: true
             saveOnAutoSync: true

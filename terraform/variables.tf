@@ -161,12 +161,12 @@ variable "bigip_version" {
 variable "f5_do_version" {
   type = string
   description = "f5 declarative onboarding version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.21.1"
+  default = "1.23.0"
 }
 variable "f5_do_schema_version" {
   type = string
   description = "f5 declarative onboarding version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.21.0"
+  default = "1.23.0"
 }
 variable "f5_as3_version" {
   type = string

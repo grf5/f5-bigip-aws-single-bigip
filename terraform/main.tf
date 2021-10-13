@@ -285,15 +285,15 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    service_address = "${aws_eip.F5_BIGIP_PRI_AZ1EIP_DATA.public_ip}"
-    monitoring_address = "${aws_eip.F5_BIGIP_PRI_AZ1EIP_DATA.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
+    monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
     cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"  
     cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-PRI_AZ1.${var.labDomain}"
-    cm_peer_hostname = "${var.projectPrefix}-bigip-SEC_AZ1.${var.labDomain}"
+    cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
+    cm_peer_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
   }
 }
 
@@ -309,15 +309,15 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    service_address = "${aws_eip.F5_BIGIP_SEC_AZ1EIP_DATA.public_ip}"
-    monitoring_address = "${aws_eip.F5_BIGIP_SEC_AZ1EIP_DATA.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
+    monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
     cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.private_ip}"  
     cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-SEC_AZ1.${var.labDomain}"
-    cm_peer_hostname = "${var.projectPrefix}-bigip-PRI_AZ1.${var.labDomain}"
+    cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
+    cm_peer_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
   }
 }
 
@@ -333,15 +333,15 @@ data "template_file" "bigip_runtime_init_PRI_AZ2" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    service_address = "${aws_eip.F5_BIGIP_PRI_AZ2EIP_DATA.public_ip}"    
-    monitoring_address = "${aws_eip.F5_BIGIP_PRI_AZ2EIP_DATA.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"    
+    monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
     cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"  
     cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-PRI_AZ2.${var.labDomain}"
-    cm_peer_hostname = "${var.projectPrefix}-bigip-SEC_AZ2.${var.labDomain}"
+    cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
+    cm_peer_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
   }
 }
 
@@ -357,15 +357,15 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    service_address = "${aws_eip.F5_BIGIP_SEC_AZ2EIP_DATA.public_ip}"    
-    monitoring_address = "${aws_eip.F5_BIGIP_SEC_AZ2EIP_DATA.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"    
+    monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
     pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
     cm_self_mgmt_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.private_ip}"  
     cm_peer_mgmt_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-SEC_AZ2.${var.labDomain}"
-    cm_peer_hostname = "${var.projectPrefix}-bigip-PRI_AZ2.${var.labDomain}"
+    cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
+    cm_peer_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
   }
 }
 
@@ -382,6 +382,8 @@ resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
+  # Disable IPV6 dual stack management because it breaks DO clustering
+  ipv6_address_count = 0  
   tags = {
     Name = "F5_BIGIP_PRI_AZ1ENI_MGMT"
   }
@@ -397,19 +399,6 @@ resource "aws_eip" "F5_BIGIP_PRI_AZ1EIP_MGMT" {
   ]
   tags = {
     Name = "F5_BIGIP_PRI_AZ1EIP_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_PRI_AZ1EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_PRI_AZ1EIP_DATA"
   }
 }
 
@@ -449,6 +438,8 @@ resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
+  # Disable IPV6 dual stack management because it breaks DO clustering
+  ipv6_address_count = 0
   tags = {
     Name = "F5_BIGIP_SEC_AZ1ENI_MGMT"
   }
@@ -464,19 +455,6 @@ resource "aws_eip" "F5_BIGIP_SEC_AZ1EIP_MGMT" {
   ]
   tags = {
     Name = "F5_BIGIP_SEC_AZ1EIP_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_SEC_AZ1EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ1EIP_DATA"
   }
 }
 
@@ -516,6 +494,8 @@ resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-MGMT.id
+  # Disable IPV6 dual stack management because it breaks DO clustering
+  ipv6_address_count = 0
   tags = {
     Name = "F5_BIGIP_PRI_AZ2ENI_MGMT"
   }
@@ -531,19 +511,6 @@ resource "aws_eip" "F5_BIGIP_PRI_AZ2EIP_MGMT" {
   ]
   tags = {
     Name = "F5_BIGIP_PRI_AZ2EIP_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_PRI_AZ2EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_PRI_AZ2EIP_DATA"
   }
 }
 
@@ -583,6 +550,8 @@ resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-MGMT.id
+  # Disable IPV6 dual stack management because it breaks DO clustering
+  ipv6_address_count = 0
   tags = {
     Name = "F5_BIGIP_SEC_AZ2ENI_MGMT"
   }
@@ -598,19 +567,6 @@ resource "aws_eip" "F5_BIGIP_SEC_AZ2EIP_MGMT" {
   ]
   tags = {
     Name = "F5_BIGIP_SEC_AZ2EIP_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_SEC_AZ2EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ2EIP_DATA"
   }
 }
 
