@@ -30,13 +30,31 @@ variable "bigipAdminPassword" {
   type = string
   sensitive = true
 }
-variable "bigipLicenseAZ1" {
+variable "labDomain" {
+  description = "domain name for lab hostnames"
+  default = "mylab.local"
+  type = string
+
+}
+variable "bigipLicensePRI_AZ1" {
   description = "BIG-IP License for AZ1 instance"
   type = string
+  default = "PAYG"
 }
-variable "bigipLicenseAZ2" {
+variable "bigipLicenseSEC_AZ1" {
+  description = "BIG-IP License for AZ1 instance"
+  type = string
+  default = "PAYG"
+}
+variable "bigipLicensePRI_AZ2" {
   description = "BIG-IP License for AZ2 instance"
   type = string
+  default = "PAYG"
+}
+variable "bigipLicenseSEC_AZ2" {
+  description = "BIG-IP License for AZ2 instance"
+  type = string
+  default = "PAYG"
 }
 variable "ClientSubnetCIDR" {
   description = "CIDR block for entire Juice Shop API VPC"
@@ -77,27 +95,27 @@ variable "ServerSubnetAZ2" {
   default = "10.30.200.0/24"
   type = string
 }
-variable "f5BigIPCIDR" {
+variable "SecuritySvcsCIDR" {
   description = "CIDR block for entire Security Services VPC"
   default = "10.250.0.0/16"
   type = string
 }
-variable "f5BigIPSubnetAZ1-MGMT" {
+variable "SecuritySvcsSubnetAZ1-MGMT" {
   description = "Subnet for Security Services AZ1"
   default = "10.250.150.0/24"
   type = string
 }
-variable "f5BigIPSubnetAZ1-DATA" {
+variable "SecuritySvcsSubnetAZ1-DATA" {
   description = "Subnet for Security Services AZ1"
   default = "10.250.100.0/24"
   type = string
 }
-variable "f5BigIPSubnetAZ2-MGMT" {
+variable "SecuritySvcsSubnetAZ2-MGMT" {
   description = "Subnet for Security Services AZ2"
   default = "10.250.250.0/24"
   type = string
 }
-variable "f5BigIPSubnetAZ2-DATA" {
+variable "SecuritySvcsSubnetAZ2-DATA" {
   description = "Subnet for Security Services AZ2"
   default = "10.250.200.0/24"
   type = string

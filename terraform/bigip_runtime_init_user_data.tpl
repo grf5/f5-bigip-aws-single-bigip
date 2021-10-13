@@ -29,6 +29,21 @@ EOF
 cat << "EOF" > /config/cloud/runtime-init-conf.yaml
 ---
 runtime_parameters:
+  - name: MGMT_IP
+    type: metadata
+    metadataProvider: 
+      environment: aws
+      type: network
+      field: local-ipv4s
+      index: 0
+  - name: MGMT_GATEWAY
+    type: metadata
+    metadataProvider:
+      environment: aws
+      type: network
+      field: local-ipv4s
+      index: 0
+      ipcalc: first
   - name: DATAPLANE_IP
     type: metadata
     metadataProvider: 
@@ -36,21 +51,6 @@ runtime_parameters:
       type: network
       field: local-ipv4s
       index: 1
-  - name: DATAPLANE_SUBNET
-    type: metadata
-    metadataProvider:
-      environment: aws
-      type: network
-      field: subnet-ipv4-cidr-block
-      index: 1
-  - name: DATAPLANE_CIDR_MASK
-    type: metadata
-    metadataProvider:
-      environment: aws
-      type: network
-      field: subnet-ipv4-cidr-block
-      index: 1
-      ipcalc: bitmask
   - name: DATAPLANE_GATEWAY
     type: metadata
     metadataProvider:
@@ -59,14 +59,6 @@ runtime_parameters:
       field: local-ipv4s
       index: 1
       ipcalc: first
-  - name: DATAPLANE_MASK
-    type: metadata
-    metadataProvider:
-      environment: aws
-      type: network
-      field: subnet-ipv4-cidr-block
-      index: 1
-      ipcalc: mask
 extension_packages:
     install_operations:
         - extensionType: do
@@ -92,9 +84,11 @@ extension_services:
             autoPhonehome: false
             cliInactivityTimeout: 3600
             consoleInactivityTimeout: 3600
+            hostname: ${cm_self_hostname}
           sshdConfig:
             class: SSHD
             inactivityTimeout: 3600
+            protocol: 2
           customDbVars:
             class: DbVariables
             provision.extramb: 500
@@ -107,6 +101,7 @@ extension_services:
           ntpConfiguration:
             class: NTP
             servers:
+              - 169.254.169.123
               - 0.pool.ntp.org
               - 1.pool.ntp.org
               - 2.pool.ntp.org
@@ -125,6 +120,7 @@ extension_services:
             interfaces:
               - name: '1.1'
                 tagged: false
+            mtu: 9001
           data-self:
             class: SelfIp
             address: "{{{ DATAPLANE_IP }}}"
@@ -136,6 +132,94 @@ extension_services:
             gw: "{{{ DATAPLANE_GATEWAY }}}"
             network: default
             mtu: 1500
+          cmConfigSync:
+            class: ConfigSync
+            configsyncIp: /Common/data-self/address
+          cmFailoverAddress:
+            class: FailoverUnicast
+            address: /Common/data-self/address
+          cmTrust:
+            class: DeviceTrust
+            localUsername: admin
+            localPassword: ${bigipAdminPassword}
+            remoteHost: ${cm_peer_mgmt_ip}
+            remoteUsername: admin
+            remotePassword: ${bigipAdminPassword}
+          trafficGroup:
+            class: TrafficGroup
+            autoFailbackEnabled: false
+            failoverMethod: ha-order
+            haOrder: 
+            - ${cm_self_hostname}
+            - ${cm_peer_hostname}
+          failoverGroup:
+            class: DeviceGroup
+            type: sync-failover
+            members:
+            - ${cm_self_mgmt_ip}
+            - ${cm_peer_mgmt_ip}
+            owner: ${cm_failover_group_owner}
+            autoSync: true
+            saveOnAutoSync: true
+            networkFailover: true
+            fullLoadOnSync: false
+            asmSync: false
+    - extensionType: as3
+      type: inline
+      value:
+        class: AS3
+        action: deploy
+        persist: true
+        declaration:
+            class: ADC
+            schemaVersion: ${f5_as3_schema_version}
+            label: AWS TGW HA with Lambda Failover
+            remark: Tested with 16.1
+            Health_Monitor:
+                class: Tenant
+                Health_Monitoring:
+                    class: Application
+                    health_monitoring_http:
+                        class: Service_HTTP
+                        virtualAddresses:
+                            - ${monitoring_address}
+                        profileHTTP: basic
+                        virtualType: standard
+                        virtualPort: 443
+                        iRules:
+                            - Monitoring_iRule
+                    Monitoring_iRule:
+                        class: iRule
+                        iRule: |-
+                            when HTTP_REQUEST {
+                            HTTP::respond 200 content "OK"
+                            }
+            IP-Forwarding:
+                class: Tenant
+                default_forwarding_ipv4:
+                    class: Application
+                    default_forwarder_ipv4:
+                        class: Service_Forwarding
+                        virtualAddresses:
+                            - 0.0.0.0/0
+                        virtualPort:
+                            - '0'
+                        forwardingType: ip
+                        layer4: tcp
+                        profileL4: basic
+                        snat: none
+                default_forwarding_ipv6:
+                    class: Application
+                    default_forwarder_ipv6:
+                        class: Service_Forwarding
+                        virtualAddresses:
+                            - '::/0'
+                        virtualPort:
+                            - '0'
+                        forwardingType: ip
+                        layer4: tcp
+                        profileL4: basic
+                        snat: none
 EOF
 
 # Add licensing if necessary
@@ -153,4 +237,4 @@ done
 bash /var/config/rest/downloads/f5-bigip-runtime-init-1.2.1-1.gz.run -- "--cloud aws"
 
 # Runtime Init execution on configuration file created above
-f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml  
+f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml
