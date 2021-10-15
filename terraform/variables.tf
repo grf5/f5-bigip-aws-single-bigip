@@ -181,10 +181,10 @@ variable "f5_as3_schema_version" {
 variable "f5_ts_version" {
   type = string
   description = "f5 telemetry streaming version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.20.1"
+  default = "1.22.0"
 }
 variable "f5_ts_schema_version" {
   type = string
   description = "f5 telemetry streaming version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.20.1"
+  default = "1.22.0"
 }

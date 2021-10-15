@@ -216,6 +216,31 @@ resource "aws_internet_gateway" "SecuritySvcsIGW" {
   }
 }
 
+resource "aws_route_table" "SecuritySvcsTGWRT" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  route {
+      cidr_block = "0.0.0.0/0"
+      transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    }
+  route {
+      ipv6_cidr_block = "::/0"
+      transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+    }
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsTGWRT-${random_id.buildSuffix.hex}"
+  }
+}
+
+# resource "aws_route_table_association" "SecuritySvcsTGWRTAssociationAZ1" {
+#   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
+#   route_table_id = aws_route_table.SecuritySvcsTGWRT.id
+# }
+
+# resource "aws_route_table_association" "SecuritySvcsTGWRTAssociationAZ2" {
+#   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
+#   route_table_id = aws_route_table.SecuritySvcsTGWRT.id
+# }
+
 resource "aws_route_table" "SecuritySvcsMgmtRT" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   route {
@@ -398,8 +423,6 @@ resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
-  # Disable IPV6 dual stack management because it breaks DO clustering
-  ipv6_address_count = 0  
   tags = {
     Name = "F5_BIGIP_PRI_AZ1ENI_MGMT"
   }
@@ -455,8 +478,6 @@ resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_DATA" {
 
 resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
-  # Disable IPV6 dual stack management because it breaks DO clustering
-  ipv6_address_count = 0
   tags = {
     Name = "F5_BIGIP_SEC_AZ1ENI_MGMT"
   }
@@ -1137,16 +1158,6 @@ resource "aws_ec2_transit_gateway_route_table" "default-route-table" {
   }
 }
 
-resource "aws_ec2_transit_gateway_route_table_propagation" "clientTGWRTAnnouncement" {
-  transit_gateway_attachment_id = aws_ec2_transit_gateway_vpc_attachment.clientTGWVPCAttachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default-route-table.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "serverTGWRTAnnouncement" {
-  transit_gateway_attachment_id = aws_ec2_transit_gateway_vpc_attachment.serverTGWVPCAttachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default-route-table.id
-}
-
 ### Client Inspection Route Table and Routes
 resource "aws_ec2_transit_gateway_route_table" "clientInspection" {
   transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
@@ -1203,3 +1214,4 @@ resource "aws_ec2_transit_gateway_route_table_association" "securityTGWRTAssocia
   transit_gateway_attachment_id = aws_ec2_transit_gateway_vpc_attachment.securityTGWVPCAttachment.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default-route-table.id
 }
+

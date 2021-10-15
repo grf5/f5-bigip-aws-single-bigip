@@ -198,7 +198,7 @@ extension_services:
                         virtualPort:
                             - '0'
                         forwardingType: ip
-                        layer4: tcp
+                        layer4: any
                         profileL4: basic
                         snat: none
                 default_forwarding_ipv6:
@@ -210,7 +210,7 @@ extension_services:
                         virtualPort:
                             - '0'
                         forwardingType: ip
-                        layer4: tcp
+                        layer4: any
                         profileL4: basic
                         snat: none
 EOF
@@ -223,11 +223,11 @@ fi
 # Download the f5-bigip-runtime-init package
 # 30 attempts, 5 second timeout and 10 second pause between attempts
 for i in {1..30}; do
-    curl -fv --retry 1 --connect-timeout 5 -L https://cdn.f5.com/product/cloudsolutions/f5-bigip-runtime-init/v1.2.1/dist/f5-bigip-runtime-init-1.2.1-1.gz.run -o /var/config/rest/downloads/f5-bigip-runtime-init-1.2.1-1.gz.run && break || sleep 10
+    curl -fv --retry 1 --connect-timeout 5 -L https://cdn.f5.com/product/cloudsolutions/f5-bigip-runtime-init/v1.3.2/dist/f5-bigip-runtime-init-1.3.2-1.gz.run -o /var/config/rest/downloads/f5-bigip-runtime-init-1.3.2-1.gz.run && break || sleep 10
 done
 
 # Execute the installer
-bash /var/config/rest/downloads/f5-bigip-runtime-init-1.2.1-1.gz.run -- "--cloud aws"
+bash /var/config/rest/downloads/f5-bigip-runtime-init-1.3.2-1.gz.run -- "--cloud aws"
 
 # Runtime Init execution on configuration file created above
 f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml

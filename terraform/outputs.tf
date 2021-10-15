@@ -35,12 +35,12 @@ output "SSH_Bash_aliases" {
   value =<<EOT
 # SSH Aliases
 alias client1='ssh ubuntu@${aws_eip.ClientAZ1EIP.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
-alias client2='ssh ubuntu@${aws_eip.ClientAZ2EIP.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias server1='ssh ubuntu@${aws_eip.ServerAZ1EIP.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias server2='ssh ubuntu@${aws_eip.ServerAZ2EIP.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias bigip-pri-az1='ssh admin@${aws_eip.F5_BIGIP_PRI_AZ1EIP_MGMT.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias bigip-sec-az1='ssh admin@${aws_eip.F5_BIGIP_SEC_AZ1EIP_MGMT.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias bigip-pri-az2='ssh admin@${aws_eip.F5_BIGIP_PRI_AZ2EIP_MGMT.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
-alias bigip-sec-az2='ssh admin@${aws_eip.F5_BIGIP_SEC_AZ2EIP_MGMT.public_ip} -p 22 -o UserKnownHostsFile=/dev/null -i "${local_file.newkey_pem.filename}"'
+alias client2='ssh ubuntu@${aws_eip.ClientAZ2EIP.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias server1='ssh ubuntu@${aws_eip.ServerAZ1EIP.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias server2='ssh ubuntu@${aws_eip.ServerAZ2EIP.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias bigip-pri-az1='ssh admin@${aws_eip.F5_BIGIP_PRI_AZ1EIP_MGMT.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias bigip-sec-az1='ssh admin@${aws_eip.F5_BIGIP_SEC_AZ1EIP_MGMT.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias bigip-pri-az2='ssh admin@${aws_eip.F5_BIGIP_PRI_AZ2EIP_MGMT.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
+alias bigip-sec-az2='ssh admin@${aws_eip.F5_BIGIP_SEC_AZ2EIP_MGMT.public_ip} -p 22 -o StrictHostKeyChecking=off -i "${local_file.newkey_pem.filename}"'
 EOT
 }
