@@ -187,6 +187,17 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ1-DATA" {
   }
 }
 
+resource "aws_subnet" "SecuritySvcsSubnetAZ1-DATA-ingress" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  cidr_block = var.SecuritySvcsSubnetAZ1-DATA-ingress
+  availability_zone = local.awsAz1
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 5)}"
+  assign_ipv6_address_on_creation = true
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ1-DATA-ingress--${random_id.buildSuffix.hex}"
+  }
+}
+
 resource "aws_subnet" "SecuritySvcsSubnetAZ2-MGMT" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   cidr_block = var.SecuritySvcsSubnetAZ2-MGMT
@@ -206,6 +217,17 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ2-DATA" {
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ2-DATA-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_subnet" "SecuritySvcsSubnetAZ2-DATA-ingress" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  cidr_block = var.SecuritySvcsSubnetAZ2-DATA-ingress
+  availability_zone = local.awsAz2
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 6)}"
+  assign_ipv6_address_on_creation = true
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ2-DATA-ingress-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -285,7 +307,57 @@ resource "aws_default_route_table" "SecuritySvcsMainRT" {
   }
   tags = {
     Name = "${var.projectPrefix}-SecuritySvcsMainRT-${random_id.buildSuffix.hex}"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
+}
+
+resource "aws_route_table" "SecuritySvcsTGWRT" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  route {
+    cidr_block = aws_subnet.ClientSubnetAZ1.cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    ipv6_cidr_block = aws_subnet.ClientSubnetAZ1.ipv6_cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    cidr_block = aws_subnet.ClientSubnetAZ2.cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    ipv6_cidr_block = aws_subnet.ClientSubnetAZ2.ipv6_cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    cidr_block = aws_subnet.ServerSubnetAZ1.cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    ipv6_cidr_block = aws_subnet.ServerSubnetAZ1.ipv6_cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    cidr_block = aws_subnet.ServerSubnetAZ2.cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  route {
+    ipv6_cidr_block = aws_subnet.ServerSubnetAZ2.ipv6_cidr_block
+    transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
+  }
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsTGWRT-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_route_table_association" "SecuritySvcsTGWRTAssociationAZ1" {
+  subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
+  route_table_id = aws_route_table.SecuritySvcsTGWRT.id
+}
+
+resource "aws_route_table_association" "SecuritySvcsTGWRTAssociationAZ2" {
+  subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
+  route_table_id = aws_route_table.SecuritySvcsTGWRT.id
 }
 
 ## 
@@ -304,15 +376,17 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
+    f5_cf_version = "${var.f5_cf_version}"
     service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
-    cm_secondary_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
     cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
     cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
+    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
+    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -328,15 +402,17 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
+    f5_cf_version = "${var.f5_cf_version}"
     service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"   
-    cm_secondary_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
     cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
     cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
+    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
+    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -352,15 +428,17 @@ data "template_file" "bigip_runtime_init_PRI_AZ2" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
+    f5_cf_version = "${var.f5_cf_version}"
     service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"    
     monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
-    pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
-    cm_secondary_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
     cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
     cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
+    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
+    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -376,15 +454,17 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
     f5_as3_schema_version = "${var.f5_as3_schema_version}"
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
+    f5_cf_version = "${var.f5_cf_version}"
     service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"    
     monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
-    pool_member_1 = "${aws_network_interface.ClientAZ1ENI.private_ip}"
-    pool_member_2 = "${aws_network_interface.ClientAZ2ENI.private_ip}"  
-    cm_secondary_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}" 
     cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
     cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
     cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
+    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
+    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
+    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -397,6 +477,8 @@ resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_DATA" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
   tags = {
     Name = "F5_BIGIP_PRI_AZ1ENI_DATA"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    f5_cloud_failover_nic_map = "data"
   }
 }
 
@@ -454,6 +536,8 @@ resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_DATA" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
   tags = {
     Name = "F5_BIGIP_SEC_AZ1ENI_DATA"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    f5_cloud_failover_nic_map = "data"
   }
 }
 
@@ -511,6 +595,8 @@ resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_DATA" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
   tags = {
     Name = "F5_BIGIP_PRI_AZ2ENI_DATA"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    f5_cloud_failover_nic_map = "data"
   }
 }
 
@@ -568,6 +654,8 @@ resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_DATA" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
   tags = {
     Name = "F5_BIGIP_SEC_AZ2ENI_DATA"
+    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    f5_cloud_failover_nic_map = "data"    
   }
 }
 
@@ -1124,7 +1212,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "serverTGWVPCAttachment" {
 resource "aws_ec2_transit_gateway_vpc_attachment" "securityTGWVPCAttachment" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
-  subnet_ids = [aws_subnet.SecuritySvcsSubnetAZ1-DATA.id,aws_subnet.SecuritySvcsSubnetAZ2-DATA.id]
+  subnet_ids = [aws_subnet.SecuritySvcsSubnetAZ1-DATA-ingress.id,aws_subnet.SecuritySvcsSubnetAZ2-DATA-ingress.id]
   transit_gateway_default_route_table_association = "false"
   transit_gateway_default_route_table_propagation = "false"
   ipv6_support = "enable"
@@ -1237,5 +1325,98 @@ resource "aws_ec2_transit_gateway_route_table_association" "serverTGWRTAssociati
 resource "aws_ec2_transit_gateway_route_table_association" "securityTGWRTAssociation" {
   transit_gateway_attachment_id = aws_ec2_transit_gateway_vpc_attachment.securityTGWVPCAttachment.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default-route-table.id
+}
+
+##
+## F5 Cloud Failover Extension Componenets
+##
+
+data "aws_iam_policy_document" "instance_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "f5_cloud_failover_role" {
+  name = "f5_cloud_failover_role-${random_id.buildSuffix.hex}"
+  assume_role_policy = data.aws_iam_policy_document.instance_assume_role_policy.json
+
+  inline_policy {
+        name = "f5_cloud_failover_policy-${random_id.buildSuffix.hex}"
+    policy = jsonencode(
+      {
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Action = [
+              "ec2:DescribeInstances",
+              "ec2:DescribeInstanceStatus",
+              "ec2:DescribeAddresses",
+              "ec2:DescribeNetworkInterfaces",
+              "ec2:DescribeNetworkInterfaceAttribute",
+              "ec2:DescribeRouteTables",
+              "s3:ListAllMyBuckets",
+              "s3:GetBucketLocation",
+              "ec2:AssociateAddress",
+              "ec2:DisassociateAddress",
+              "ec2:AssignPrivateIpAddresses",
+              "ec2:UnassignPrivateIpAddresses"
+            ]
+            Effect = "Allow"
+            Resource = "*"
+          },
+          {
+            Action = [
+              "sts:AssumeRole"
+            ]
+            Resource = "arn:aws:iam:::role/<my_role>"
+            Effect = "Allow"
+          },
+          {
+            Action = [
+              "ec2:CreateRoute",
+              "ec2:ReplaceRoute"
+            ]
+            Resource = "*"
+            Effect = "Allow"
+          },
+          {
+            Action = [
+              "s3:ListBucket",
+              "s3:GetBucketLocation",
+              "s3:GetBucketTagging"
+            ]
+            Resource = "arn:aws:s3:::<my_id>"
+            Effect = "Allow"
+          },
+          {
+            Action = [
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:DeleteObject"
+            ]
+            Resource = "arn:aws:s3:::<my_id>/*"
+            Effect = "Allow"
+          }
+        ]
+      }
+    )
+  }
+  tags = {
+    Name = "${var.projectPrefix}-iam-role-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_s3_bucket" "f5-cloud-failover-configuration" {
+  bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
+  acl = "private"
+  tags = {
+    Name = "${var.projectPrefix}-s3-bucket-${random_id.buildSuffix.hex}"
+  }
 }
 

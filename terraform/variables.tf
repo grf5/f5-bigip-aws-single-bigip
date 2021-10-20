@@ -110,6 +110,11 @@ variable "SecuritySvcsSubnetAZ1-DATA" {
   default = "10.250.100.0/24"
   type = string
 }
+variable "SecuritySvcsSubnetAZ1-DATA-ingress" {
+  description = "Subnet for Security Services AZ1"
+  default = "10.250.101.0/24"
+  type = string
+}
 variable "SecuritySvcsSubnetAZ2-MGMT" {
   description = "Subnet for Security Services AZ2"
   default = "10.250.250.0/24"
@@ -118,6 +123,11 @@ variable "SecuritySvcsSubnetAZ2-MGMT" {
 variable "SecuritySvcsSubnetAZ2-DATA" {
   description = "Subnet for Security Services AZ2"
   default = "10.250.200.0/24"
+  type = string
+}
+variable "SecuritySvcsSubnetAZ2-DATA-ingress" {
+  description = "Subnet for Security Services AZ2"
+  default = "10.250.201.0/24"
   type = string
 }
 variable get_address_url {

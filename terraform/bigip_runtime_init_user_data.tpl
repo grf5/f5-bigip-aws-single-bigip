@@ -59,18 +59,25 @@ runtime_parameters:
       field: local-ipv4s
       index: 1
       ipcalc: first
+pre_onboard_enabled:
+  - name: provision_rest
+    type: inline
+    commands:
+      - /usr/bin/setdb provision.extramb 1000
+      - /usr/bin/setdb restjavad.useextramb true
+      - /usr/bin/setdb setup.run false
 extension_packages:
-    install_operations:
-        - extensionType: do
-          extensionVersion: ${f5_do_version}
-        - extensionType: as3
-          extensionVersion: ${f5_as3_version}
-        - extensionType: ts
-          extensionVersion: ${f5_ts_version}
-        - extensionType: cf
-          extensionVersion: ${f5_cf_version}
+  install_operations:
+    - extensionType: do
+      extensionVersion: ${f5_do_version}
+    - extensionType: as3
+      extensionVersion: ${f5_as3_version}
+    - extensionType: ts
+      extensionVersion: ${f5_ts_version}
+    - extensionType: cf
+      extensionVersion: ${f5_cf_version}
 extension_services:
-    service_operations:
+  service_operations:
     - extensionType: do
       type: inline
       value: 
@@ -93,7 +100,7 @@ extension_services:
             protocol: 2
           customDbVars:
             class: DbVariables
-            provision.extramb: 500
+            provision.extramb: 1000
             restjavad.useextramb: true
             ui.system.preferences.recordsperscreen: 250
             ui.system.preferences.advancedselection: advanced
@@ -121,12 +128,12 @@ extension_services:
             interfaces:
               - name: '1.1'
                 tagged: false
-            mtu: 9001
+            mtu: 1500
           data-self:
             class: SelfIp
             address: "{{{ DATAPLANE_IP }}}"
             vlan: data-vlan
-            allowService: default
+            allowService: all
             trafficGroup: traffic-group-local-only
           data-default-route:
             class: Route
@@ -139,25 +146,25 @@ extension_services:
           failoverAddress:
             class: FailoverUnicast
             address: /Common/data-self/address
-          # trust:
-          #   class: DeviceTrust
-          #   localUsername: admin
-          #   localPassword: ${bigipAdminPassword}
-          #   remoteHost: ${cm_secondary_ip}
-          #   remoteUsername: admin
-          #   remotePassword: ${bigipAdminPassword}
-          # failoverGroup:
-          #   class: DeviceGroup
-          #   type: sync-failover
-          #   members:
-          #     - ${cm_primary_hostname}
-          #     - ${cm_secondary_hostname}
-          #   owner: /Common/FailoverGroup/members/0
-          #   autoSync: true
-          #   saveOnAutoSync: true
-          #   networkFailover: true
-          #   fullLoadOnSync: false
-          #   asmSync: false
+          trust:
+            class: DeviceTrust
+            localUsername: admin
+            localPassword: ${bigipAdminPassword}
+            remoteHost: ${cm_peer_ip}
+            remoteUsername: admin
+            remotePassword: ${bigipAdminPassword}
+          failoverGroup:
+            class: DeviceGroup
+            type: sync-failover
+            members:
+              - ${cm_primary_hostname}
+              - ${cm_secondary_hostname}
+            owner: /Common/failoverGroup/members/0
+            autoSync: true
+            saveOnAutoSync: false
+            networkFailover: true
+            fullLoadOnSync: false
+            asmSync: true
     - extensionType: as3
       type: inline
       value:
@@ -214,6 +221,36 @@ extension_services:
                         layer4: any
                         profileL4: basic
                         snat: none
+    - extensionType: cf
+      type: inline
+      value:
+        class: Cloud_Failover
+        environment: aws
+        externalStorage:
+          scopingTags:
+            f5_cloud_failover_label: '${f5_cloud_failover_label}'
+        failoverAddresses:
+          enabled: false
+          scopingTags:
+            f5_cloud_failover_label: '${f5_cloud_failover_label}'
+        failoverRoutes:
+          enabled: true
+          scopingTags:
+            f5_cloud_failover_label: '${f5_cloud_failover_label}'
+          scopingAddressRanges:
+            - range: '0.0.0.0/0'
+            - range: '::/0'
+          defaultNextHopAddresses:
+            discoveryType: static
+            items:
+              - '${primary_data_ip}'
+              - '${secondary_data_ip}'
+post_onboard_enabled:
+  - name: trigger_failover
+    type: inline
+    commands:
+    - $(nohup bash /config/failover/tgactive &>/dev/null &)
+    - tmsh save sys config
 EOF
 
 # Add licensing if necessary
