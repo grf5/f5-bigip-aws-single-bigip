@@ -188,3 +188,9 @@ variable "f5_ts_schema_version" {
   description = "f5 telemetry streaming version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
   default = "1.22.0"
 }
+
+variable "f5_cf_version" {
+  type = string
+  description = "f5 cloud failover extension version (see https://github.com/F5Networks/f5-cloud-failover-extension/releases/)"
+  default = "1.9.0"
+}

@@ -67,6 +67,8 @@ extension_packages:
           extensionVersion: ${f5_as3_version}
         - extensionType: ts
           extensionVersion: ${f5_ts_version}
+        - extensionType: cf
+          extensionVersion: ${f5_cf_version}
 extension_services:
     service_operations:
     - extensionType: do
@@ -109,7 +111,6 @@ extension_services:
           Provisioning:
             class: Provision
             ltm: nominal
-            asm: nominal
           admin:
             class: User
             userType: regular
@@ -132,26 +133,26 @@ extension_services:
             gw: "{{{ DATAPLANE_GATEWAY }}}"
             network: default
             mtu: 1500
-          cmConfigSync:
+          configSync:
             class: ConfigSync
             configsyncIp: /Common/data-self/address
-          cmFailoverAddress:
+          failoverAddress:
             class: FailoverUnicast
             address: /Common/data-self/address
-          # cmTrust:
+          # trust:
           #   class: DeviceTrust
           #   localUsername: admin
           #   localPassword: ${bigipAdminPassword}
-          #   remoteHost: ${cm_peer_ip}
+          #   remoteHost: ${cm_secondary_ip}
           #   remoteUsername: admin
           #   remotePassword: ${bigipAdminPassword}
-          # cmFailoverGroup:
+          # failoverGroup:
           #   class: DeviceGroup
           #   type: sync-failover
           #   members:
-          #     - ${cm_self_hostname}
-          #     - ${cm_peer_hostname}
-          #   owner: /Common/cmFailoverGroup/members/0
+          #     - ${cm_primary_hostname}
+          #     - ${cm_secondary_hostname}
+          #   owner: /Common/FailoverGroup/members/0
           #   autoSync: true
           #   saveOnAutoSync: true
           #   networkFailover: true
@@ -230,4 +231,4 @@ done
 bash /var/config/rest/downloads/f5-bigip-runtime-init-1.3.2-1.gz.run -- "--cloud aws"
 
 # Runtime Init execution on configuration file created above
-f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml
+f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml --skip-telemetry
