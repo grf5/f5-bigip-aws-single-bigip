@@ -387,6 +387,10 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
+    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ1.ipv6_cidr_block}"
+    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
+    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ1.ipv6_cidr_block}"
   }
 }
 
@@ -413,6 +417,10 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
+    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ1.ipv6_cidr_block}"
+    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
+    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ1.ipv6_cidr_block}"
   }
 }
 
@@ -439,6 +447,10 @@ data "template_file" "bigip_runtime_init_PRI_AZ2" {
     primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
+    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ2.ipv6_cidr_block}"
+    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
+    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ2.ipv6_cidr_block}"
   }
 }
 
@@ -465,6 +477,10 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
     primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
+    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
+    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ2.ipv6_cidr_block}"
+    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
+    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ2.ipv6_cidr_block}"
   }
 }
 

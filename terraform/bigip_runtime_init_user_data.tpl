@@ -238,8 +238,10 @@ extension_services:
           scopingTags:
             f5_cloud_failover_label: '${f5_cloud_failover_label}'
           scopingAddressRanges:
-            - range: '0.0.0.0/0'
-            - range: '::/0'
+            - range: '${client_subnet_cidr_ipv4}'
+            - range: '${client_subnet_cidr_ipv6}'
+            - range: '${server_subnet_cidr_ipv4}'
+            - range: '${server_subnet_cidr_ipv6}'
           defaultNextHopAddresses:
             discoveryType: static
             items:
