@@ -11,5 +11,3 @@ EXITCODE=$?
 # apply the plan if the planning operation was successful
 test $EXITCODE -eq 0 && terraform -chdir=terraform apply -input=false --auto-approve tfplan || echo "An error occurred while creating the Terraform plan"; 
 printf "$0 completed at $(date)"
-# Mac notification after a certain amount of time to remind us the environment is ready
-if [[ "$OSTYPE" == "darwin"* ]]; then sleep 360; osascript -e 'display notification "Your BIG-IP environment in AWS should be ready."';  fi &

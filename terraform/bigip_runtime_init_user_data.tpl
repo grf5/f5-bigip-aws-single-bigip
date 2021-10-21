@@ -2,15 +2,15 @@
 
 # Send output to log file and serial console
 mkdir -p  /var/log/cloud /config/cloud /var/config/rest/downloads
-# LOG_FILE=/var/log/cloud/startup-script.log
-# [[ ! -f $LOG_FILE ]] && touch $LOG_FILE || { echo "Run Only Once. Exiting"; exit; }
-# npipe=/tmp/$$.tmp
-# trap "rm -f $npipe" EXIT
-# mknod $npipe p
-# tee <$npipe -a $LOG_FILE /dev/ttyS0 &
-# exec 1>&-
-# exec 1>$npipe
-# exec 2>&1
+LOG_FILE=/var/log/cloud/startup-script.log
+[[ ! -f $LOG_FILE ]] && touch $LOG_FILE || { echo "Run Only Once. Exiting"; exit; }
+npipe=/tmp/$$.tmp
+trap "rm -f $npipe" EXIT
+mknod $npipe p
+tee <$npipe -a $LOG_FILE /dev/ttyS0 &
+exec 1>&-
+exec 1>$npipe
+exec 2>&1
 
 ### write_files:
 # shell script execution with debug enabled
@@ -106,7 +106,7 @@ extension_services:
             ui.system.preferences.advancedselection: advanced
             ui.advisory.enabled: true
             ui.advisory.color: green
-            ui.advisory.text: "AWS Transit Gateway Routing Update via Lambda"
+            ui.advisory.text: "AWS Cloud Failover Extension Lab"
           ntpConfiguration:
             class: NTP
             servers:
@@ -174,7 +174,7 @@ extension_services:
         declaration:
             class: ADC
             schemaVersion: ${f5_as3_schema_version}
-            label: AWS TGW HA with Lambda Failover
+            label: AWS HA Testing
             remark: Tested with 16.1
             Health_Monitor:
                 class: Tenant
@@ -226,6 +226,9 @@ extension_services:
       value:
         class: Cloud_Failover
         environment: aws
+        controls:
+          class: controls
+          logLevel: silly
         externalStorage:
           scopingTags:
             f5_cloud_failover_label: '${f5_cloud_failover_label}'
@@ -247,12 +250,6 @@ extension_services:
             items:
               - '${primary_data_ip}'
               - '${secondary_data_ip}'
-post_onboard_enabled:
-  - name: trigger_failover
-    type: inline
-    commands:
-    - $(nohup bash /config/failover/tgactive &>/dev/null &)
-    - tmsh save sys config
 EOF
 
 # Add licensing if necessary
