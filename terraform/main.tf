@@ -238,6 +238,26 @@ resource "aws_internet_gateway" "SecuritySvcsIGW" {
   }
 }
 
+resource "aws_egress_only_internet_gateway" "SecuritySvcsEOIGW" {
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsEOIGW-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_eip" "SecurityServicesEIP" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "SecuritySvcsNGW" {
+  subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
+  allocation_id = aws_eip.SecurityServicesEIP.id
+  tags = {
+    Name = "${var.projectPrefix}-SecuritySvcsNGW-${random_id.buildSuffix.hex}"
+  }
+}
+
+
 resource "aws_route_table" "SecuritySvcsMgmtRT" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   route {
@@ -267,11 +287,11 @@ resource "aws_default_route_table" "SecuritySvcsMainRT" {
   default_route_table_id = aws_vpc.SecuritySvcsVPC.default_route_table_id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    nat_gateway_id = aws_nat_gateway.SecuritySvcsNGW.id
   }
   route {
     ipv6_cidr_block = "::/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    egress_only_gateway_id = aws_egress_only_internet_gateway.SecuritySvcsEOIGW.id
   }
   route {
     cidr_block = aws_subnet.ClientSubnetAZ1.cidr_block
@@ -315,11 +335,11 @@ resource "aws_route_table" "SecuritySvcsTGWRT" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    nat_gateway_id = aws_nat_gateway.SecuritySvcsNGW.id
   }
   route {
     ipv6_cidr_block = "::/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
+    egress_only_gateway_id = aws_egress_only_internet_gateway.SecuritySvcsEOIGW.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ClientSubnetAZ1.ipv6_cidr_block
@@ -537,7 +557,7 @@ resource "aws_instance" "F5_BIGIP_PRI_AZ1" {
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz1
   key_name = aws_key_pair.deployer.id
-  #iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
 	user_data = "${data.template_file.bigip_runtime_init_PRI_AZ1.rendered}"
   network_interface {
     network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.id
@@ -597,7 +617,7 @@ resource "aws_instance" "F5_BIGIP_SEC_AZ1" {
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz1
   key_name = aws_key_pair.deployer.id
-  #iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
 	user_data = "${data.template_file.bigip_runtime_init_SEC_AZ1.rendered}"
   network_interface {
     network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.id
@@ -657,7 +677,7 @@ resource "aws_instance" "F5_BIGIP_PRI_AZ2" {
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz2
   key_name = aws_key_pair.deployer.id
-  #iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
 	user_data = "${data.template_file.bigip_runtime_init_PRI_AZ2.rendered}"
   network_interface {
     network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.id
@@ -717,7 +737,7 @@ resource "aws_instance" "F5_BIGIP_SEC_AZ2" {
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz2
   key_name = aws_key_pair.deployer.id
-  #iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
 	user_data = "${data.template_file.bigip_runtime_init_SEC_AZ2.rendered}"
   network_interface {
     network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.id

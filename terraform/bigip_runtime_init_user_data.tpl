@@ -84,7 +84,7 @@ extension_services:
         schemaVersion: ${f5_do_schema_version}
         class: Device
         async: true
-        label: BIG-IP Onboarding
+        label: F5 BIG-IP Onboarding
         Common:
           class: Tenant
           systemConfig:
