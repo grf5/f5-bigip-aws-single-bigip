@@ -420,9 +420,8 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
     client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
-    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ1.ipv6_cidr_block}"
     server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
-    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ1.ipv6_cidr_block}"
+    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -450,9 +449,8 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
     client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
-    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ1.ipv6_cidr_block}"
     server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
-    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ1.ipv6_cidr_block}"
+    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -480,9 +478,8 @@ data "template_file" "bigip_runtime_init_PRI_AZ2" {
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
     client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
-    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ2.ipv6_cidr_block}"
     server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
-    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ2.ipv6_cidr_block}"
+    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -510,9 +507,8 @@ data "template_file" "bigip_runtime_init_SEC_AZ2" {
     secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
     f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
     client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
-    client_subnet_cidr_ipv6 = "${aws_subnet.ClientSubnetAZ2.ipv6_cidr_block}"
     server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
-    server_subnet_cidr_ipv6 = "${aws_subnet.ServerSubnetAZ2.ipv6_cidr_block}"
+    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -1383,7 +1379,8 @@ resource "aws_ec2_transit_gateway_route_table_association" "securityTGWRTAssocia
 ## F5 Cloud Failover Extension Componenets
 ##
 
-data "aws_iam_policy_document" "instance_assume_role_policy" {
+data "aws_iam_policy_document" "instance_role" {
+  version = "2012-10-17"
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -1394,70 +1391,61 @@ data "aws_iam_policy_document" "instance_assume_role_policy" {
   }
 }
 
+data "aws_iam_policy_document" "instance_policy" {
+  version = "2012-10-17"
+  statement {
+    actions = [
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
+      "ec2:DescribeAddresses",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeNetworkInterfaceAttribute",
+      "ec2:DescribeRouteTables",
+      "s3:ListAllMyBuckets",
+      "s3:GetBucketLocation",
+      "ec2:AssociateAddress",
+      "ec2:DisassociateAddress",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+  }
+  statement {
+    actions = [
+      "ec2:CreateRoute",
+      "ec2:ReplaceRoute"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+  }
+  statement {
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+      "s3:GetBucketTagging"
+    ]
+    resources = [aws_s3_bucket.f5-cloud-failover-configuration.arn]
+    effect    = "Allow"
+  }
+  statement {
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
+    ]
+    resources = ["${aws_s3_bucket.f5-cloud-failover-configuration.arn}/*"]
+    effect    = "Allow"
+  }
+}
+
 resource "aws_iam_role" "f5_cloud_failover_role" {
   name = "f5_cloud_failover_role-${random_id.buildSuffix.hex}"
-  assume_role_policy = data.aws_iam_policy_document.instance_assume_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.instance_role.json
 
   inline_policy {
-        name = "f5_cloud_failover_policy-${random_id.buildSuffix.hex}"
-    policy = jsonencode(
-      {
-        Version = "2012-10-17"
-        Statement = [
-          {
-            Action = [
-              "ec2:DescribeInstances",
-              "ec2:DescribeInstanceStatus",
-              "ec2:DescribeAddresses",
-              "ec2:DescribeNetworkInterfaces",
-              "ec2:DescribeNetworkInterfaceAttribute",
-              "ec2:DescribeRouteTables",
-              "s3:ListAllMyBuckets",
-              "s3:GetBucketLocation",
-              "ec2:AssociateAddress",
-              "ec2:DisassociateAddress",
-              "ec2:AssignPrivateIpAddresses",
-              "ec2:UnassignPrivateIpAddresses"
-            ]
-            Effect = "Allow"
-            Resource = "*"
-          },
-          {
-            Action = [
-              "sts:AssumeRole"
-            ]
-            Resource = "arn:aws:iam:::role/<my_role>"
-            Effect = "Allow"
-          },
-          {
-            Action = [
-              "ec2:CreateRoute",
-              "ec2:ReplaceRoute"
-            ]
-            Resource = "*"
-            Effect = "Allow"
-          },
-          {
-            Action = [
-              "s3:ListBucket",
-              "s3:GetBucketLocation",
-              "s3:GetBucketTagging"
-            ]
-            Resource = "arn:aws:s3:::<my_id>"
-            Effect = "Allow"
-          },
-          {
-            Action = [
-              "s3:PutObject",
-              "s3:GetObject",
-              "s3:DeleteObject"
-            ]
-            Resource = "arn:aws:s3:::<my_id>/*"
-            Effect = "Allow"
-          }
-        ]
-      }
-    )
+    name = "f5_cloud_failover_policy-${random_id.buildSuffix.hex}"
+    policy = data.aws_iam_policy_document.instance_policy.json
   }
   tags = {
     Name = "${var.projectPrefix}-iam-role-${random_id.buildSuffix.hex}"
@@ -1466,7 +1454,7 @@ resource "aws_iam_role" "f5_cloud_failover_role" {
 
 resource "aws_iam_instance_profile" "f5_cloud_failover_instance_profile" {
   name = "f5_cloud_failover_instance_role-${random_id.buildSuffix.hex}"
-  role = "${aws_iam_role.f5_cloud_failover_role.name}"
+  role = aws_iam_role.f5_cloud_failover_role.name
 }
 
 resource "aws_s3_bucket" "f5-cloud-failover-configuration" {

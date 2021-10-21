@@ -174,7 +174,7 @@ extension_services:
         declaration:
             class: ADC
             schemaVersion: ${f5_as3_schema_version}
-            label: AWS HA Testing
+            label: F5 AWS HA Testing
             remark: Tested with 16.1
             Health_Monitor:
                 class: Tenant
@@ -227,13 +227,12 @@ extension_services:
         class: Cloud_Failover
         environment: aws
         controls:
-          class: controls
+          class: Controls
           logLevel: silly
         externalStorage:
-          scopingTags:
-            f5_cloud_failover_label: '${f5_cloud_failover_label}'
+          scopingName: '${s3_bucket}'
         failoverAddresses:
-          enabled: false
+          enabled: true
           scopingTags:
             f5_cloud_failover_label: '${f5_cloud_failover_label}'
         failoverRoutes:
@@ -242,9 +241,7 @@ extension_services:
             f5_cloud_failover_label: '${f5_cloud_failover_label}'
           scopingAddressRanges:
             - range: '${client_subnet_cidr_ipv4}'
-            - range: '${client_subnet_cidr_ipv6}'
             - range: '${server_subnet_cidr_ipv4}'
-            - range: '${server_subnet_cidr_ipv6}'
           defaultNextHopAddresses:
             discoveryType: static
             items:
