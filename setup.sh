@@ -1,10 +1,10 @@
 #!/bin/bash
 # Enable logging to file
-export TF_LOG=trace
+export TF_LOG=warn
 export TF_LOG_PATH=terraform.log
 rm -f $TF_LOG_PATH
 # init to ensure we have proper providers
-terraform -chdir=terraform init
+terraform -chdir=terraform init --upgrade
 # run the plan to ensure we have proper configuration
 terraform -chdir=terraform plan -input=false -var-file=../admin.auto.tfvars -out tfplan
 EXITCODE=$?

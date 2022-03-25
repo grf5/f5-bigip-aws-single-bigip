@@ -6,7 +6,6 @@ read -r -p "Are you sure? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     terraform -chdir=terraform destroy -var-file=../admin.auto.tfvars --auto-approve
-    rm -f terraform.log
 else
     echo "Cancelled due to user input"
 fi

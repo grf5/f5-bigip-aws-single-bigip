@@ -59,13 +59,6 @@ runtime_parameters:
       field: local-ipv4s
       index: 1
       ipcalc: first
-pre_onboard_enabled:
-  - name: provision_rest
-    type: inline
-    commands:
-      - /usr/bin/setdb provision.extramb 1000
-      - /usr/bin/setdb restjavad.useextramb true
-      - /usr/bin/setdb setup.run false
 extension_packages:
   install_operations:
     - extensionType: do
@@ -106,7 +99,7 @@ extension_services:
             ui.system.preferences.advancedselection: advanced
             ui.advisory.enabled: true
             ui.advisory.color: green
-            ui.advisory.text: "AWS Cloud Failover Extension Lab"
+            ui.advisory.text: "F5 AWS Cloud Failover Extension Lab"
           ntpConfiguration:
             class: NTP
             servers:
@@ -118,6 +111,7 @@ extension_services:
           Provisioning:
             class: Provision
             ltm: nominal
+            afm: nominal
           admin:
             class: User
             userType: regular
@@ -232,7 +226,7 @@ extension_services:
         externalStorage:
           scopingName: '${s3_bucket}'
         failoverAddresses:
-          enabled: true
+          enabled: false
           scopingTags:
             f5_cloud_failover_label: '${f5_cloud_failover_label}'
         failoverRoutes:
@@ -247,6 +241,13 @@ extension_services:
             items:
               - '${primary_data_ip}'
               - '${secondary_data_ip}'
+post_onboard_enabled:
+  - name: trigger_failover
+    type: inline
+    commands:
+    - $(nohup bash /config/failover/tgactive &>/dev/null &)
+    - $(nohup tmsh modify cm device-group failoverGroup devices modify { ${cm_secondary_hostname} { set-sync-leader } } &>/dev/null &)
+    - tmsh save sys config
 EOF
 
 # Add licensing if necessary
