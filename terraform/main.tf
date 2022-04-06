@@ -432,32 +432,31 @@ resource "aws_instance" "F5_BIGIP_PRI_AZ1" {
   iam_instance_profile = "${aws_iam_instance_profile.f5_cloud_failover_instance_profile.name}"
 	user_data = templatefile("${path.module}/bigip_runtime_init_user_data.tpl",
     {
-    bigipAdminPassword = "${var.bigipAdminPassword}",
-    bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}",
-    bigipLicense = "${var.bigipLicensePRI_AZ1}",
-    f5_do_version = "${var.f5_do_version}",
-    f5_do_schema_version = "${var.f5_do_schema_version}",
-    f5_as3_version = "${var.f5_as3_version}",
-    f5_as3_schema_version = "${var.f5_as3_schema_version}",
-    f5_ts_version = "${var.f5_ts_version}",
-    f5_ts_schema_version = "${var.f5_ts_schema_version}",
-    f5_cf_version = "${var.f5_cf_version}",
-    service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
-    monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
-    cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}",
-    cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}",
-    cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}",
-    cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}",
-    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}",
-    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
-    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}",
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}",
-    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}",
-    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}",
-    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
-  }
-)
-
+      bigipAdminPassword = "${var.bigipAdminPassword}",
+      bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}",
+      bigipLicense = "${var.bigipLicensePRI_AZ1}",
+      f5_do_version = "${var.f5_do_version}",
+      f5_do_schema_version = "${var.f5_do_schema_version}",
+      f5_as3_version = "${var.f5_as3_version}",
+      f5_as3_schema_version = "${var.f5_as3_schema_version}",
+      f5_ts_version = "${var.f5_ts_version}",
+      f5_ts_schema_version = "${var.f5_ts_schema_version}",
+      f5_cf_version = "${var.f5_cf_version}",
+      service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
+      monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
+      cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}",
+      cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}",
+      cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}",
+      cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}",
+      cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}",
+      primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}",
+      secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}",
+      f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}",
+      client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}",
+      server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}",
+      s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
+    }
+  )
   network_interface {
     network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.id
     device_index = 0

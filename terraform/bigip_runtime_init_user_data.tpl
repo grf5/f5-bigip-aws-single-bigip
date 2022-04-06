@@ -98,8 +98,14 @@ extension_services:
             ui.system.preferences.recordsperscreen: 250
             ui.system.preferences.advancedselection: advanced
             ui.advisory.enabled: true
-            ui.advisory.color: green
-            ui.advisory.text: "F5 AWS Cloud Failover Extension Lab"
+            ui.advisory.color: blue
+            ui.advisory.text: "F5 AWS Firewall"
+            tm.fastl4_ack_mirror: disable
+            tm.fw.defaultaction: drop
+            tm.rejectunmatched: false
+            icrd.timeout: 120
+            restjavad.timeout: 120
+            restnoded.timeout: 120
           ntpConfiguration:
             class: NTP
             servers:
@@ -140,13 +146,6 @@ extension_services:
           failoverAddress:
             class: FailoverUnicast
             address: /Common/data-self/address
-          trust:
-            class: DeviceTrust
-            localUsername: admin
-            localPassword: ${bigipAdminPassword}
-            remoteHost: ${cm_peer_ip}
-            remoteUsername: admin
-            remotePassword: ${bigipAdminPassword}
           failoverGroup:
             class: DeviceGroup
             type: sync-failover
@@ -158,7 +157,14 @@ extension_services:
             saveOnAutoSync: false
             networkFailover: true
             fullLoadOnSync: false
-            asmSync: true
+            asmSync: false
+          trust:
+            class: DeviceTrust
+            localUsername: admin
+            localPassword: ${bigipAdminPassword}
+            remoteHost: ${cm_peer_ip}
+            remoteUsername: admin
+            remotePassword: ${bigipAdminPassword}
     - extensionType: as3
       type: inline
       value:

@@ -171,36 +171,36 @@ variable "bigip_version" {
 variable "f5_do_version" {
   type = string
   description = "f5 declarative onboarding version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.23.0"
+  default = "1.27.0"
 }
 variable "f5_do_schema_version" {
   type = string
   description = "f5 declarative onboarding version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.23.0"
+  default = "1.27.0"
 }
 variable "f5_as3_version" {
   type = string
   description = "f5 application services version (see https://github.com/F5Networks/f5-appsvcs-extension/releases/latest)"
-  default = "3.26.1"
+  default = "3.34.0"
 }
 variable "f5_as3_schema_version" {
   type = string
   description = "f5 application services version (see https://github.com/F5Networks/f5-appsvcs-extension/releases/latest)"
-  default = "3.26.0"
+  default = "3.34.0"
 }
 variable "f5_ts_version" {
   type = string
   description = "f5 telemetry streaming version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.22.0"
+  default = "1.26.0"
 }
 variable "f5_ts_schema_version" {
   type = string
   description = "f5 telemetry streaming version (see https://github.com/F5Networks/f5-declarative-onboarding/releases/latest)"
-  default = "1.22.0"
+  default = "1.26.0"
 }
 
 variable "f5_cf_version" {
   type = string
   description = "f5 cloud failover extension version (see https://github.com/F5Networks/f5-cloud-failover-extension/releases/)"
-  default = "1.9.0"
+  default = "1.10.0"
 }
