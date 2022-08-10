@@ -1,0 +1,9 @@
+{
+	"folders": [
+		{
+			"name": "f5-bigip-aws-tgw-lambda-failover",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
