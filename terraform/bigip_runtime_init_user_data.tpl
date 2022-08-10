@@ -67,8 +67,6 @@ extension_packages:
       extensionVersion: ${f5_as3_version}
     - extensionType: ts
       extensionVersion: ${f5_ts_version}
-    - extensionType: cf
-      extensionVersion: ${f5_cf_version}
 extension_services:
   service_operations:
     - extensionType: do
@@ -86,7 +84,6 @@ extension_services:
             autoPhonehome: false
             cliInactivityTimeout: 3600
             consoleInactivityTimeout: 3600
-            hostname: ${cm_self_hostname}
           sshdConfig:
             class: SSHD
             inactivityTimeout: 3600
@@ -99,10 +96,7 @@ extension_services:
             ui.system.preferences.advancedselection: advanced
             ui.advisory.enabled: true
             ui.advisory.color: blue
-            ui.advisory.text: "F5 AWS Firewall"
-            tm.fastl4_ack_mirror: disable
-            tm.fw.defaultaction: drop
-            tm.rejectunmatched: false
+            ui.advisory.text: "Single BIG-IP in AWS"
             icrd.timeout: 120
             restjavad.timeout: 120
             restnoded.timeout: 120
@@ -117,7 +111,7 @@ extension_services:
           Provisioning:
             class: Provision
             ltm: nominal
-            afm: nominal
+            apm: nominal
           admin:
             class: User
             userType: regular
@@ -140,31 +134,6 @@ extension_services:
             gw: "{{{ DATAPLANE_GATEWAY }}}"
             network: default
             mtu: 1500
-          configSync:
-            class: ConfigSync
-            configsyncIp: /Common/data-self/address
-          failoverAddress:
-            class: FailoverUnicast
-            address: /Common/data-self/address
-          failoverGroup:
-            class: DeviceGroup
-            type: sync-failover
-            members:
-              - ${cm_primary_hostname}
-              - ${cm_secondary_hostname}
-            owner: /Common/failoverGroup/members/0
-            autoSync: true
-            saveOnAutoSync: false
-            networkFailover: true
-            fullLoadOnSync: false
-            asmSync: false
-          trust:
-            class: DeviceTrust
-            localUsername: admin
-            localPassword: ${bigipAdminPassword}
-            remoteHost: ${cm_peer_ip}
-            remoteUsername: admin
-            remotePassword: ${bigipAdminPassword}
     - extensionType: as3
       type: inline
       value:
@@ -174,85 +143,24 @@ extension_services:
         declaration:
             class: ADC
             schemaVersion: ${f5_as3_schema_version}
-            label: F5 AWS HA Testing
+            label: F5 Generic HTTPS Listener with self-signed certificate
             remark: Tested with 16.1
-            Health_Monitor:
+            Default_Virtuals:
                 class: Tenant
-                Health_Monitoring:
+                Generic_HTTPS:
                     class: Application
                     health_monitoring_http:
-                        class: Service_HTTP
+                        class: Service_HTTPS
                         virtualAddresses:
-                            - ${monitoring_address}
-                        profileHTTP: basic
-                        virtualType: standard
+                          - ${service_address}
+                        serverTLS:
+                          bigip: /Common/clientssl
+                        snat: auto
                         virtualPort: 443
-                        iRules:
-                            - Monitoring_iRule
-                    Monitoring_iRule:
-                        class: iRule
-                        iRule: |-
-                            when HTTP_REQUEST {
-                            HTTP::respond 200 content "OK"
-                            }
-            IP-Forwarding:
-                class: Tenant
-                default_forwarding_ipv4:
-                    class: Application
-                    default_forwarder_ipv4:
-                        class: Service_Forwarding
-                        virtualAddresses:
-                            - 0.0.0.0/0
-                        virtualPort:
-                            - '0'
-                        forwardingType: ip
-                        layer4: any
-                        profileL4: basic
-                        snat: none
-                default_forwarding_ipv6:
-                    class: Application
-                    default_forwarder_ipv6:
-                        class: Service_Forwarding
-                        virtualAddresses:
-                            - '::/0'
-                        virtualPort:
-                            - '0'
-                        forwardingType: ip
-                        layer4: any
-                        profileL4: basic
-                        snat: none
-    - extensionType: cf
-      type: inline
-      value:
-        class: Cloud_Failover
-        environment: aws
-        controls:
-          class: Controls
-          logLevel: silly
-        externalStorage:
-          scopingName: '${s3_bucket}'
-        failoverAddresses:
-          enabled: false
-          scopingTags:
-            f5_cloud_failover_label: '${f5_cloud_failover_label}'
-        failoverRoutes:
-          enabled: true
-          scopingTags:
-            f5_cloud_failover_label: '${f5_cloud_failover_label}'
-          scopingAddressRanges:
-            - range: '${client_subnet_cidr_ipv4}'
-            - range: '${server_subnet_cidr_ipv4}'
-          defaultNextHopAddresses:
-            discoveryType: static
-            items:
-              - '${primary_data_ip}'
-              - '${secondary_data_ip}'
 post_onboard_enabled:
   - name: trigger_failover
     type: inline
     commands:
-    - $(nohup bash /config/failover/tgactive &>/dev/null &)
-    - $(nohup tmsh modify cm device-group failoverGroup devices modify { ${cm_secondary_hostname} { set-sync-leader } } &>/dev/null &)
     - tmsh save sys config
 EOF
 
@@ -264,11 +172,11 @@ fi
 # Download the f5-bigip-runtime-init package
 # 30 attempts, 5 second timeout and 10 second pause between attempts
 for i in {1..30}; do
-    curl -fv --retry 1 --connect-timeout 5 -L https://cdn.f5.com/product/cloudsolutions/f5-bigip-runtime-init/v1.3.2/dist/f5-bigip-runtime-init-1.3.2-1.gz.run -o /var/config/rest/downloads/f5-bigip-runtime-init-1.3.2-1.gz.run && break || sleep 10
+    curl -fv --retry 1 --connect-timeout 5 -L https://github.com/F5Networks/f5-bigip-runtime-init/releases/download/1.5.1/f5-bigip-runtime-init-1.5.1-1.gz.run -o /var/config/rest/downloads/f5-bigip-runtime-init-1.5.1-1.gz.run && break || sleep 10
 done
 
 # Execute the installer
-bash /var/config/rest/downloads/f5-bigip-runtime-init-1.3.2-1.gz.run -- "--cloud aws"
+bash /var/config/rest/downloads/f5-bigip-runtime-init-1.5.1-1.gz.run -- "--cloud aws"
 
 # Runtime Init execution on configuration file created above
 f5-bigip-runtime-init --config-file /config/cloud/runtime-init-conf.yaml --skip-telemetry
